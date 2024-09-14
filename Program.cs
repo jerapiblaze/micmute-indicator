@@ -17,18 +17,13 @@ namespace micmute_indicator
             ApplicationConfiguration.Initialize();
 
             var commDeviceWatchdog = new CommDeviceWatchdog();
-            //var osd = new OnScreenDisplay();
-            //var osd = new OSD();
             var osd = new MuteForm();
 
             while (true)
             {
                 if (commDeviceWatchdog.IsMuteWarningNeeded())
                 {
-                    //osd.Show();
-                    //osd.ShowDialog();
                     osd.Display();
-                    //osd.Show();
                 }
                 else
                 {
@@ -37,9 +32,6 @@ namespace micmute_indicator
                 }
                 Thread.Sleep(1000);
             }
-
-            //Application.Run(new Form1());
-            //Application.Run();
         }
     }
 }

@@ -11,31 +11,55 @@ namespace micmute_indicator
 {
     internal class CommDeviceWatchdog
     {
-        public MMDevice commDevice;
+        private MMDevice? device;
+        private readonly bool deviceDetection;
         
-        public CommDeviceWatchdog(MMDevice commDevice) 
+        public CommDeviceWatchdog(MMDevice device) 
         {
-            this.commDevice = commDevice;
+            this.device = device;
+            this.deviceDetection = false;
         }
 
         public CommDeviceWatchdog()
         {
-            var deviceEnumerator = new MMDeviceEnumerator();
-            this.commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+            this.device = null;
+            this.deviceDetection = true;
         }
 
         public bool IsMuteWarningNeeded()
         {
-            var isMuted = AudioDeviceHelper.CheckMutedState(this.commDevice);
-            var hasActiveSession = AudioDeviceHelper.CheckActiveSession(this.commDevice);
-            return isMuted && hasActiveSession;
+            if (this.deviceDetection)
+            {
+                var deviceEnumerator = new MMDeviceEnumerator();
+                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                
+                var commIsMuted = AudioDeviceHelper.CheckMutedState(commDevice);
+                var commHasActiveSession = AudioDeviceHelper.CheckActiveSession(commDevice);
+                var consoleIsMuted = AudioDeviceHelper.CheckMutedState(consoleDevice);
+                var consoleHasActiveSession = AudioDeviceHelper.CheckActiveSession(consoleDevice);
+                var multimediaIsMuted = AudioDeviceHelper.CheckMutedState(multimediaDevice);
+                var multimediaHasActiveSession = AudioDeviceHelper.CheckActiveSession(multimediaDevice);
+
+                return (commIsMuted && commHasActiveSession) || (consoleIsMuted && consoleHasActiveSession) || (multimediaIsMuted && multimediaHasActiveSession);
+            } else
+            {
+                if (this.device == null)
+                {
+                    return false;
+                }
+
+                var isMuted = AudioDeviceHelper.CheckMutedState(this.device);
+                var hasActiveSession = AudioDeviceHelper.CheckActiveSession(this.device);
+                
+                return isMuted && hasActiveSession;
+            }        
         }
 
-        private static void Watch_DoWork(object sender, DoWorkEventArgs e)
+        public MMDevice? GetCurrentDevice()
         {
-            BackgroundWorker s = sender as BackgroundWorker;
-
-            // Task
+            return this.device;
         }
     }
 }
