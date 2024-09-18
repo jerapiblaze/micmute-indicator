@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Diagnostics;
+﻿using System.Drawing.Drawing2D;
 
 namespace micmute_indicator.Helpers
 {
@@ -17,7 +9,7 @@ namespace micmute_indicator.Helpers
 
         public MuteForm()
         {
-            
+
         }
 
         protected override void PerformPaint(PaintEventArgs e)
@@ -53,8 +45,8 @@ namespace micmute_indicator.Helpers
             Screen screen1 = Screen.FromHandle(Handle);
             Width = 150;
             Height = 50;
-            X = (screen1.Bounds.Width - Width) * 11/12;
-            Y = (screen1.Bounds.Height - Height) * 14/15;
+            X = (screen1.Bounds.Width - Width) * 11 / 12;
+            Y = (screen1.Bounds.Height - Height) * 14 / 15;
 
             Show();
         }

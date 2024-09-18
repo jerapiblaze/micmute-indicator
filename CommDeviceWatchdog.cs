@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
-using NAudio.CoreAudioApi.Interfaces;
+﻿using NAudio.CoreAudioApi;
 
 namespace micmute_indicator
 {
@@ -13,8 +6,8 @@ namespace micmute_indicator
     {
         private MMDevice? device;
         private readonly bool deviceDetection;
-        
-        public CommDeviceWatchdog(MMDevice device) 
+
+        public CommDeviceWatchdog(MMDevice device)
         {
             this.device = device;
             this.deviceDetection = false;
@@ -30,20 +23,28 @@ namespace micmute_indicator
         {
             if (this.deviceDetection)
             {
-                var deviceEnumerator = new MMDeviceEnumerator();
-                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-                
-                var commIsMuted = AudioDeviceHelper.CheckMutedState(commDevice);
-                var commHasActiveSession = AudioDeviceHelper.CheckActiveSession(commDevice);
-                var consoleIsMuted = AudioDeviceHelper.CheckMutedState(consoleDevice);
-                var consoleHasActiveSession = AudioDeviceHelper.CheckActiveSession(consoleDevice);
-                var multimediaIsMuted = AudioDeviceHelper.CheckMutedState(multimediaDevice);
-                var multimediaHasActiveSession = AudioDeviceHelper.CheckActiveSession(multimediaDevice);
 
-                return (commIsMuted && commHasActiveSession) || (consoleIsMuted && consoleHasActiveSession) || (multimediaIsMuted && multimediaHasActiveSession);
-            } else
+                using (var deviceEnumerator = new MMDeviceEnumerator())
+                {
+                    var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                    var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                    var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+
+                    var commIsMuted = AudioDeviceHelper.CheckMutedState(commDevice);
+                    var commHasActiveSession = AudioDeviceHelper.CheckActiveSession(commDevice);
+                    var consoleIsMuted = AudioDeviceHelper.CheckMutedState(consoleDevice);
+                    var consoleHasActiveSession = AudioDeviceHelper.CheckActiveSession(consoleDevice);
+                    var multimediaIsMuted = AudioDeviceHelper.CheckMutedState(multimediaDevice);
+                    var multimediaHasActiveSession = AudioDeviceHelper.CheckActiveSession(multimediaDevice);
+
+                    //commDevice.Dispose();
+                    //consoleDevice.Dispose();
+                    //multimediaDevice.Dispose();
+
+                    return (commIsMuted && commHasActiveSession) || (consoleIsMuted && consoleHasActiveSession) || (multimediaIsMuted && multimediaHasActiveSession);
+                }
+            }
+            else
             {
                 if (this.device == null)
                 {
@@ -52,9 +53,9 @@ namespace micmute_indicator
 
                 var isMuted = AudioDeviceHelper.CheckMutedState(this.device);
                 var hasActiveSession = AudioDeviceHelper.CheckActiveSession(this.device);
-                
+
                 return isMuted && hasActiveSession;
-            }        
+            }
         }
 
         public MMDevice? GetCurrentDevice()

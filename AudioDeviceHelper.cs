@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
+﻿using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
 namespace micmute_indicator
@@ -13,23 +8,32 @@ namespace micmute_indicator
 
         public static MMDevice GetDefaultCommDevice()
         {
-            var deviceEnumerator = new MMDeviceEnumerator();
-            var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-            return commDevice;
+            using (var deviceEnumerator = new MMDeviceEnumerator())
+            {
+                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                deviceEnumerator.Dispose();
+                return commDevice;
+            }
         }
 
         public static MMDevice GetDefaultConsoleDevice()
         {
-            var deviceEnumerator = new MMDeviceEnumerator();
-            var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-            return consoleDevice;
+            using (var deviceEnumerator = new MMDeviceEnumerator())
+            {
+                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                deviceEnumerator.Dispose();
+                return consoleDevice;
+            }
         }
 
         public static MMDevice GetDefaultMUltimediaDevice()
         {
-            var deviceEnumerator = new MMDeviceEnumerator();
-            var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-            return multimediaDevice;
+            using (var deviceEnumerator = new MMDeviceEnumerator())
+            {
+                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                deviceEnumerator.Dispose();
+                return multimediaDevice;
+            }
         }
 
         public static bool CheckActiveSession(MMDevice device)

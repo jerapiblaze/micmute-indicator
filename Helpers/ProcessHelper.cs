@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace micmute_indicator.Helpers
 {
@@ -22,7 +17,7 @@ namespace micmute_indicator.Helpers
                         {
                             process.Kill();
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             Application.Exit();
                             return;

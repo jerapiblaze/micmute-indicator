@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using micmute_indicator.Helpers;
 
 namespace micmute_indicator
@@ -9,17 +8,18 @@ namespace micmute_indicator
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static async Task Main()
         {
             ProcessHelper.CheckAlreadyRunning();
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
 
-            var commDeviceWatchdog = new CommDeviceWatchdog();
-            var osd = new MuteForm();
+            CommDeviceWatchdog commDeviceWatchdog = new();
+            MuteForm osd = new();
+            PeriodicTimer timer = new(TimeSpan.FromMilliseconds(1000));
 
-            while (true)
+            while (await timer.WaitForNextTickAsync())
             {
                 if (commDeviceWatchdog.IsMuteWarningNeeded())
                 {
@@ -28,9 +28,8 @@ namespace micmute_indicator
                 else
                 {
                     osd.Hide();
-                    osd.Hide();
                 }
-                Thread.Sleep(1000);
+                GC.Collect(0);
             }
         }
     }
