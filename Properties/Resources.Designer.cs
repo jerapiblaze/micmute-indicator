@@ -69,5 +69,11 @@ namespace micmute_indicator.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        internal static System.Drawing.Bitmap icons8_unmute {
+            get {
+                object obj = ResourceManager.GetObject("icons8-unmute", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
