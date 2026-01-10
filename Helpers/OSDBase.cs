@@ -60,7 +60,10 @@ namespace micmute_indicator.Helpers
         public virtual void Show()
         {
             if (Handle == nint.Zero) //if handle don't equal to zero - window was created and just hided
+            {
                 CreateWindowOnly();
+            }
+
             User32.ShowWindow(Handle, User32.SW_SHOWNOACTIVATE);
         }
 
@@ -68,7 +71,10 @@ namespace micmute_indicator.Helpers
         public virtual void Hide()
         {
             if (Handle == nint.Zero)
+            {
                 return;
+            }
+
             User32.ShowWindow(Handle, User32.SW_HIDE);
             DestroyHandle();
         }
@@ -248,7 +254,11 @@ namespace micmute_indicator.Helpers
             get { return _alpha; }
             set
             {
-                if (_alpha == value) return;
+                if (_alpha == value)
+                {
+                    return;
+                }
+
                 _alpha = value;
                 UpdateLayeredWindow();
             }

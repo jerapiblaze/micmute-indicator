@@ -12,7 +12,9 @@ namespace micmute_indicator.Helpers
             if (processes.Length > 1)
             {
                 foreach (Process process in processes)
+                {
                     if (process.Id != currentProcess.Id)
+                    {
                         try
                         {
                             process.Kill();
@@ -22,6 +24,8 @@ namespace micmute_indicator.Helpers
                             Application.Exit();
                             return;
                         }
+                    }
+                }
             }
         }
 

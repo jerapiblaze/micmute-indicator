@@ -1,10 +1,4 @@
 ﻿using micmute_indicator.Helpers;
-using NAudio.CoreAudioApi;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace micmute_indicator
 {
@@ -15,7 +9,7 @@ namespace micmute_indicator
         private static readonly NotifyIcon notifyIcon = new();
         private static bool showOSD = Properties.Settings.Default.ShowOSD;
 
-        public Core() 
+        public Core()
         {
             InitalizeComponents();
             primaryTimer.Start();
@@ -44,8 +38,8 @@ namespace micmute_indicator
 
         private static void WarnState_Check()
         {
-            if (AudioDeviceHelper.CheckAllActive()) 
-            { 
+            if (AudioDeviceHelper.CheckAllActive())
+            {
                 notifyIcon.Visible = true;
                 if (AudioDeviceHelper.CheckAllMuted())
                 {
@@ -54,7 +48,8 @@ namespace micmute_indicator
                     if (showOSD)
                     {
                         osd.Display();
-                    } else
+                    }
+                    else
                     {
                         osd.Hide();
                     }
@@ -65,7 +60,8 @@ namespace micmute_indicator
                     notifyIcon.Text = "Unmuted";
                     osd.Hide();
                 }
-            } else
+            }
+            else
             {
                 notifyIcon.Visible = false;
                 osd.Close();
