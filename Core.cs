@@ -71,7 +71,10 @@ namespace micmute_indicator
         private static void PrimaryTimer_Tick(object? sender, EventArgs e)
         {
             WarnState_Check();
-            GC.Collect(0);
+            GC.Collect(GC.MaxGeneration);
+            GC.WaitForPendingFinalizers();
+            GC.WaitForFullGCComplete();
+            GC.Collect(GC.MaxGeneration);
         }
     }
 }
