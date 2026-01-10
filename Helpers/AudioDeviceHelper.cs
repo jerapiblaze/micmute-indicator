@@ -43,7 +43,7 @@ namespace micmute_indicator.Helpers
 
             for (int i = 0; i < sessionList.Count; i++)
             {
-                var session = sessionList[i];
+                //var session = sessionList[i];
                 //MessageBox.Show(i + "\t" + session.DisplayName.ToString() + "\t" + session.State.ToString(), device.ToString() + "\t" + sessionList.Count);
                 if (sessionList[i].State == AudioSessionState.AudioSessionStateActive)
                 {
