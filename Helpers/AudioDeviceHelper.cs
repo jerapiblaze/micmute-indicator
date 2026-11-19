@@ -6,114 +6,157 @@ namespace micmute_indicator.Helpers
     internal class AudioDeviceHelper
     {
 
-        public static MMDevice GetDefaultCommDevice()
+        public static MMDevice? GetDefaultCommDevice()
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            return TryGetDevice(Role.Communications);
+        }
+
+        public static MMDevice? GetDefaultConsoleDevice()
+        {
+            return TryGetDevice(Role.Console);
+        }
+
+        public static MMDevice? GetDefaultMUltimediaDevice()
+        {
+            return TryGetDevice(Role.Multimedia);
+        }
+
+        private static MMDevice? TryGetDevice(Role role)
+        {
+            try
             {
-                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                deviceEnumerator.Dispose();
-                return commDevice;
+                using var deviceEnumerator = new MMDeviceEnumerator();
+                return deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, role);
+            }
+            catch (Exception)
+            {
+                // No capture device available, or device temporarily unavailable (e.g. being reconfigured).
+                return null;
             }
         }
 
-        public static MMDevice GetDefaultConsoleDevice()
+        private static bool TryGetAllCaptureDevices(MMDeviceEnumerator deviceEnumerator, out MMDevice? commDevice, out MMDevice? consoleDevice, out MMDevice? multimediaDevice)
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            commDevice = null;
+            consoleDevice = null;
+            multimediaDevice = null;
+
+            try
             {
-                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                deviceEnumerator.Dispose();
-                return consoleDevice;
+                commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
-        public static MMDevice GetDefaultMUltimediaDevice()
+        public static bool CheckActiveSession(MMDevice? device)
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            if (device is null)
             {
-                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-                deviceEnumerator.Dispose();
-                return multimediaDevice;
+                return false;
             }
-        }
 
-        public static bool CheckActiveSession(MMDevice device)
-        {
-            SessionCollection sessionList = device.AudioSessionManager.Sessions;
-            device.AudioSessionManager.RefreshSessions();
-
-            for (int i = 0; i < sessionList.Count; i++)
+            try
             {
-                //var session = sessionList[i];
-                //MessageBox.Show(i + "\t" + session.DisplayName.ToString() + "\t" + session.State.ToString(), device.ToString() + "\t" + sessionList.Count);
-                if (sessionList[i].State == AudioSessionState.AudioSessionStateActive)
+                SessionCollection sessionList = device.AudioSessionManager.Sessions;
+                device.AudioSessionManager.RefreshSessions();
+
+                for (int i = 0; i < sessionList.Count; i++)
                 {
-                    return true;
+                    if (sessionList[i].State == AudioSessionState.AudioSessionStateActive)
+                    {
+                        return true;
+                    }
                 }
+
+                return false;
             }
-
-            return false;
-
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
-        public static bool CheckMutedState(MMDevice device)
+        public static bool CheckMutedState(MMDevice? device)
         {
-            bool status = device.AudioEndpointVolume.Mute;
-
-            return status;
-
+            try
+            {
+                return device?.AudioEndpointVolume.Mute ?? false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public static bool CheckAllMuted()
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            try
             {
-                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                using var deviceEnumerator = new MMDeviceEnumerator();
+                if (!TryGetAllCaptureDevices(deviceEnumerator, out var commDevice, out var consoleDevice, out var multimediaDevice))
+                {
+                    return false;
+                }
 
-                var commMuted = commDevice.AudioEndpointVolume.Mute;
-                var consoleMuted = consoleDevice.AudioEndpointVolume.Mute;
-                var multimediaMuted = multimediaDevice.AudioEndpointVolume.Mute;
-
-                deviceEnumerator.Dispose();
+                var commMuted = commDevice!.AudioEndpointVolume.Mute;
+                var consoleMuted = consoleDevice!.AudioEndpointVolume.Mute;
+                var multimediaMuted = multimediaDevice!.AudioEndpointVolume.Mute;
 
                 return commMuted && consoleMuted && multimediaMuted;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
         public static bool CheckAllActive()
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            try
             {
-                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                using var deviceEnumerator = new MMDeviceEnumerator();
+                if (!TryGetAllCaptureDevices(deviceEnumerator, out var commDevice, out var consoleDevice, out var multimediaDevice))
+                {
+                    return false;
+                }
 
                 var commActive = CheckActiveSession(commDevice);
                 var consoleActive = CheckActiveSession(consoleDevice);
                 var multimediaActive = CheckActiveSession(multimediaDevice);
 
-                deviceEnumerator.Dispose();
-
                 return commActive || consoleActive && multimediaActive;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
         public static void ToggleMute()
         {
-            using (var deviceEnumerator = new MMDeviceEnumerator())
+            try
             {
-                var commDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                var consoleDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                var multimediaDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+                using var deviceEnumerator = new MMDeviceEnumerator();
+                if (!TryGetAllCaptureDevices(deviceEnumerator, out var commDevice, out var consoleDevice, out var multimediaDevice))
+                {
+                    return;
+                }
 
-                bool status = !commDevice.AudioEndpointVolume.Mute;
+                bool status = !commDevice!.AudioEndpointVolume.Mute;
 
                 commDevice.AudioEndpointVolume.Mute = status;
-                consoleDevice.AudioEndpointVolume.Mute = status;
-                multimediaDevice.AudioEndpointVolume.Mute = status;
-
-                deviceEnumerator.Dispose();
+                consoleDevice!.AudioEndpointVolume.Mute = status;
+                multimediaDevice!.AudioEndpointVolume.Mute = status;
+            }
+            catch (Exception)
+            {
+                // Ignore transient audio device errors (e.g. device disconnected mid-toggle).
             }
         }
     }

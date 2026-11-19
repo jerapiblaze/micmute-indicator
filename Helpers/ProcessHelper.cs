@@ -6,25 +6,35 @@ namespace micmute_indicator.Helpers
     {
         public static void CheckAlreadyRunning()
         {
-            Process currentProcess = Process.GetCurrentProcess();
+            using Process currentProcess = Process.GetCurrentProcess();
             Process[] processes = Process.GetProcessesByName(currentProcess.ProcessName);
 
-            if (processes.Length > 1)
+            try
+            {
+                if (processes.Length > 1)
+                {
+                    foreach (Process process in processes)
+                    {
+                        if (process.Id != currentProcess.Id)
+                        {
+                            try
+                            {
+                                process.Kill();
+                            }
+                            catch (Exception)
+                            {
+                                Application.Exit();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            finally
             {
                 foreach (Process process in processes)
                 {
-                    if (process.Id != currentProcess.Id)
-                    {
-                        try
-                        {
-                            process.Kill();
-                        }
-                        catch (Exception)
-                        {
-                            Application.Exit();
-                            return;
-                        }
-                    }
+                    process.Dispose();
                 }
             }
         }

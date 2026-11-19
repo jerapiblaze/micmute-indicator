@@ -8,6 +8,7 @@ namespace micmute_indicator
         private static readonly System.Windows.Forms.Timer primaryTimer = new();
         private static readonly NotifyIcon notifyIcon = new();
         private static bool showOSD = Properties.Settings.Default.ShowOSD;
+        private static Icon? currentIcon;
 
         public Core()
         {
@@ -36,6 +37,18 @@ namespace micmute_indicator
             AudioDeviceHelper.ToggleMute();
         }
 
+        private static void SetNotifyIcon(Bitmap bitmap)
+        {
+            Icon? previousIcon = currentIcon;
+            currentIcon = Icon.FromHandle(bitmap.GetHicon());
+            notifyIcon.Icon = currentIcon;
+
+            // The handle created by GetHicon() and wrapped by Icon.FromHandle is not owned/released
+            // by the Icon object, so we must dispose it ourselves once it's no longer in use to avoid
+            // leaking native GDI icon handles.
+            previousIcon?.Dispose();
+        }
+
         private static void WarnState_Check()
         {
             if (AudioDeviceHelper.CheckAllActive())
@@ -43,7 +56,7 @@ namespace micmute_indicator
                 notifyIcon.Visible = true;
                 if (AudioDeviceHelper.CheckAllMuted())
                 {
-                    notifyIcon.Icon = Icon.FromHandle(Properties.Resources.icons8_mute.GetHicon());
+                    SetNotifyIcon(Properties.Resources.icons8_mute);
                     notifyIcon.Text = "Muted";
                     if (showOSD)
                     {
@@ -56,7 +69,7 @@ namespace micmute_indicator
                 }
                 else
                 {
-                    notifyIcon.Icon = Icon.FromHandle(Properties.Resources.icons8_unmute.GetHicon());
+                    SetNotifyIcon(Properties.Resources.icons8_unmute);
                     notifyIcon.Text = "Unmuted";
                     osd.Hide();
                 }
@@ -70,11 +83,14 @@ namespace micmute_indicator
 
         private static void PrimaryTimer_Tick(object? sender, EventArgs e)
         {
-            WarnState_Check();
-            GC.Collect(GC.MaxGeneration);
-            GC.WaitForPendingFinalizers();
-            GC.WaitForFullGCComplete();
-            GC.Collect(GC.MaxGeneration);
+            try
+            {
+                WarnState_Check();
+            }
+            catch (Exception)
+            {
+                // Avoid crashing the tray app on transient audio/UI errors; the next tick will retry.
+            }
         }
     }
 }
